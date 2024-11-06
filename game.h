@@ -20,31 +20,30 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
-    static const int DOT_WIDTH = 20;
-    static const int DOT_HEIGHT = 20;
-    static const int FIELD_WIDTH = 20;
-    static const int FIELD_HEIGHT = 20;
+    static const int DOT_WIDTH = 30;
+    static const int DOT_HEIGHT = 30;
+    static const int FIELD_WIDTH = 15;
+    static const int FIELD_HEIGHT = 15;
     static const int DELAY = 100;
+    static const int SNAKE_LENGTH = 3;
 
-    int m_timerId;
-
+    QVector<QPoint> m_dots;
     QPoint m_apple;
     enum Directions {
         left, right, up, down
     };
-
     Directions m_dir;
-
+    int m_timerId;
     bool m_inGame;
-    QVector<QPoint> m_dots;
+    int m_eatenApples;
 
     void initGame();
-    void doDrawing();
     void localApple();
+    void checkApple();
+    void doDrawing();
     void move();
     void checkField();
     void gameOver();
-    void checkApple();
 };
 
 #endif // GAME_H

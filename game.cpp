@@ -1,5 +1,4 @@
 #include "game.h"
-#include "qdatetime.h"
 #include <QDebug>
 Game::Game()
 {
@@ -21,68 +20,24 @@ void Game::timerEvent(QTimerEvent *)
 
 void Game::keyPressEvent(QKeyEvent *event)
 {
+
+    qDebug() << "press";
     int key = event->key();
-    if(key == Qt::Key_A && m_dir != Directions::right){
+    if(key == Qt::Key_A && m_dots[0].y()!=m_dots[1].y()){
         m_dir = Directions::left;
     }
-    if(key == Qt::Key_D && m_dir != Directions::left){
+    else if(key == Qt::Key_D && m_dots[0].y()!=m_dots[1].y()){
         m_dir = Directions::right;
     }
-    if(key == Qt::Key_W && m_dir != Directions::down){
+    else if(key == Qt::Key_W && m_dots[0].x()!=m_dots[1].x()){
         m_dir = Directions::up;
     }
-    if(key == Qt::Key_S && m_dir != Directions::up){
+    else if(key == Qt::Key_S && m_dots[0].x()!=m_dots[1].x()){
         m_dir = Directions::down;
     }
-
-}
-
-void Game::paintEvent(QPaintEvent *event)
-{
-    Q_UNUSED(event);
-    doDrawing();
-}
-
-void Game::initGame() {
-    m_inGame = true;
-    m_dir = right;
-
-    m_dots.resize(3);
-
-    for(int i=0; i < m_dots.size(); ++i) {
-        m_dots[i].setX(m_dots.size() - i - 1);
-        m_dots[i].setY(0);
+    else if(key == Qt::Key_Escape){
+        this->close();
     }
-
-    localApple();
-
-    m_timerId = startTimer(DELAY);
-}
-
-void Game::doDrawing()
-{
-    QPainter qp(this);
-
-    if(m_inGame){
-        qp.setBrush(Qt::red);
-        qp.drawEllipse(m_apple.x() * DOT_WIDTH, m_apple.y() * DOT_HEIGHT, DOT_WIDTH, DOT_HEIGHT);
-
-        qp.setBrush(Qt::green);
-        for(int i = 0; i < m_dots.size(); ++i){
-            qp.drawEllipse(m_dots[i].x() * DOT_WIDTH, m_dots[i].y() * DOT_HEIGHT, DOT_WIDTH, DOT_HEIGHT);
-        }
-    } else {
-        gameOver();
-    }
-}
-
-void Game::localApple()
-{
-    QTime time = QTime::currentTime();
-    qsrand((uint) time.msec());
-
-    m_apple.setX(qrand()%DOT_WIDTH);
-    m_apple.setY(qrand()%DOT_HEIGHT);
 }
 
 void Game::move()
@@ -98,9 +53,72 @@ void Game::move()
     }
 }
 
+void Game::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event);
+    doDrawing();
+}
+
+void Game::initGame() {
+    m_inGame = true;
+    localApple();
+    m_eatenApples = 0;
+    m_dir = right;
+
+    m_dots.resize(SNAKE_LENGTH);
+
+    for(int i=0; i < m_dots.size(); ++i) {
+        m_dots[i].setX(m_dots.size() - i - 1);
+        m_dots[i].setY(0);
+    }
+
+
+    m_timerId = startTimer(DELAY);
+}
+
+void Game::localApple()
+{
+    QPoint pos(QRandomGenerator::global()->generate()%FIELD_WIDTH,
+               QRandomGenerator::global()->generate()%FIELD_HEIGHT);
+    while(m_dots.contains(pos)){
+        pos.rx() = QRandomGenerator::global()->generate()%FIELD_WIDTH;
+        pos.rx() = QRandomGenerator::global()->generate()%FIELD_HEIGHT;
+    }
+    m_apple.setX(pos.x());
+    m_apple.setY(pos.y());
+    qDebug() << "posx: " << m_apple.x() << "\nposy: " << m_apple.y();
+}
+
+void Game::checkApple()
+{
+    if(m_apple == m_dots[0]){
+        m_dots.push_back(QPoint(0,0));
+        m_eatenApples++;
+        localApple();
+    }
+}
+
+void Game::doDrawing()
+{
+    QPainter qp(this);
+
+    if(m_inGame){
+        qp.setBrush(Qt::red);
+        qp.drawEllipse(m_apple.x() * DOT_WIDTH, m_apple.y() * DOT_HEIGHT, DOT_WIDTH, DOT_HEIGHT);
+        //qDebug() << "2 posx: " << m_apple.x() << "\nposy: " << m_apple.y();
+
+        qp.setBrush(Qt::green);
+        for(int i = 0; i < m_dots.size(); ++i){
+            qp.drawEllipse(m_dots[i].x() * DOT_WIDTH, m_dots[i].y() * DOT_HEIGHT, DOT_WIDTH, DOT_HEIGHT);
+        }
+    } else {
+        gameOver();
+    }
+}
+
 void Game::checkField()
 {
-    if(m_dots.size() > 4) {
+    if(m_dots.size() > 3) {
         for(int i = 1; i < m_dots.size(); ++i){
             if(m_dots[0] == m_dots[i]){
                 m_inGame = false;
@@ -110,13 +128,13 @@ void Game::checkField()
     if(m_dots[0].x() >= FIELD_WIDTH){
         m_inGame = false;
     }
-    if(m_dots[0].x() < 0){
+    else if(m_dots[0].x() < 0){
         m_inGame = false;
     }
-    if(m_dots[0].y() >= FIELD_HEIGHT){
+    else if(m_dots[0].y() >= FIELD_HEIGHT){
         m_inGame = false;
     }
-    if(m_dots[0].y() < 0){
+    else if(m_dots[0].y() < 0){
         m_inGame = false;
     }
 
@@ -128,16 +146,9 @@ void Game::checkField()
 void Game::gameOver()
 {
     QMessageBox msgb;
-    msgb.setText("Game Over");
+    QString text = "Game Over\nEaten apples: " + QString::number(m_eatenApples);
+    msgb.setText(text);
     msgb.exec();
 
     initGame();
-}
-
-void Game::checkApple()
-{
-    if(m_apple == m_dots[0]){
-        m_dots.push_back(QPoint(0,0));
-        localApple();
-    }
 }
