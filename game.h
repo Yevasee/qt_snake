@@ -2,14 +2,13 @@
 #define GAME_H
 
 #include <QWidget>
-#include <QVector>
-#include <QPoint>
 #include <QKeyEvent>
 #include <QPainter>
 #include <QRandomGenerator>
 #include <QMessageBox>
 
 #include "snake.h"
+#include "apple.h"
 
 class Game : public QWidget
 {
@@ -29,17 +28,17 @@ private:
     static const int s_snakeLength = 3;
     static const int s_delay = 100;
 
+    Snake *m_snake = new Snake;
+    Apple *m_apple = new Apple;
+
     bool m_inGame;
     int m_timerId;
     int m_eatenApples;
-    QPoint m_apple;
-
-    Snake *m_snake = new Snake;
 
     void initGame();
-    void localApple();
+    void draw();
+    void setApple();
     void checkApple();
-    void doDrawing();
     void gameOver();
 };
 

@@ -28,7 +28,7 @@ public:
     void grow();
 
     //positon
-    QPoint getPositionBodyPart(const int index);
+    QPoint positionBodyPart(const int index);
     void setPositionsBodyParts(const int ypos);
     bool bodyContains(const QPoint pos);
 

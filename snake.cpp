@@ -34,7 +34,7 @@ void Snake::grow()
 }
 
 //position
-QPoint Snake::getPositionBodyPart(const int index)
+QPoint Snake::positionBodyPart(const int index)
 {
     return m_body[index];
 }
