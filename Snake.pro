@@ -1,7 +1,9 @@
 QT += widgets
 SOURCES += \
         game.cpp \
-        main.cpp
+        main.cpp \
+        snake.cpp
 
 HEADERS += \
-    game.h
+    game.h \
+    snake.h
